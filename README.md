@@ -30,3 +30,16 @@
 ###### toOverride [string] Callback Name
 
 - returns {func, order}
+
+## multiple examples in one:
+```lua
+ssys.new('main', 'load', function()
+  ssys.call 'initglobals'
+end)
+ssys.new('main', 'initglobals', function()
+  E = true
+end)
+ssys.new('main', 'initglobals', function()
+  print('initialized')
+end, 100, function() return E == true end)
+```
