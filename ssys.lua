@@ -37,18 +37,11 @@ local autoArray = {
     'touchreleased',
 }
 
-local rs = rawset
-local ti = table.insert
-local ts = table.sort
-local pairs = pairs
-local sm = setmetatable
-local gm = getmetatable
-
-local sortcacher = sm({}, { -- sort results cache
+local sortcacher = setmetatable({}, { -- sort results cache
     __mode = 'k', -- weak keys
     __index = function(t, key)
         local new = {}
-        rs(t, key, new)
+        rawset(t, key, new)
         return new
     end, -- nonexistent table index is created in case there is not
 })
@@ -59,10 +52,10 @@ local function opairs(tbl)
         SORTED = {}
         for x, t in pairs(tbl) do
             if t._order ~= nil then
-                ti(SORTED, {t, x, t._order})
+                table.insert(SORTED, {t, x, t._order})
             end
         end
-        ts(SORTED, function(a, b) return a[3] < b[3] end)
+        table.sort(SORTED, function(a, b) return a[3] < b[3] end)
         sortcacher[tbl] = SORTED
     end
 
@@ -75,10 +68,10 @@ local function opairs(tbl)
     end
 end
 
-local scenes = sm({},  {
+local scenes = setmetatable({},  {
     __index = function(t, key)
         local new = {}
-        rs(t, key, new)
+        rawset(t, key, new)
         return new
     end,
 })
