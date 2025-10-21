@@ -48,7 +48,7 @@ local sortcacher = setmetatable({}, { -- sort results cache
 
 local function opairs(tbl)
     local SORTED = sortcacher[tbl]
-    if not SORTED or #SORTED == 0 then
+    if not SORTED or next(SORTED) == nil then
         SORTED = {}
         for x, t in pairs(tbl) do
             if t._order ~= nil then
