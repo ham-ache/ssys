@@ -57,6 +57,10 @@ end
 local function swap(self, a, b)
   self.orders[a], self.orders[b] = 
   self.orders[b], self.orders[a] ;
+  self.scenes[a], self.scenes[b] = 
+  self.scenes[b], self.scenes[a] ;
+  self.sOrder[self.scenes[a]] = b
+  self.sOrder[self.scenes[b]] = a
 end
 
 local function float(self, pos)
@@ -88,7 +92,7 @@ local function remove(self, pos)
       local min = pos
       local child = pos*2
       for c = child, child + 1 do
-        if c <= last and self.orders[c] > self.orders[min] then min = c end
+        if c <= last and self.orders[c] < self.orders[min] then min = c end
       end
       if min == pos then break end
       swap(self, pos, min)
