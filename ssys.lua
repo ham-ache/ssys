@@ -57,10 +57,10 @@ end
 local function swap(self, a, b)
   self.orders[a], self.orders[b] = 
   self.orders[b], self.orders[a] ;
-  self.scenes[a], self.scenes[b] = 
-  self.scenes[b], self.scenes[a] ;
-  self.sOrder[self.scenes[a]] = b
-  self.sOrder[self.scenes[b]] = a
+  local sA, sB = self.scenes[a], self.scenes[b]
+  self.scenes[a], self.scenes[b] = sB, sA
+  self.sOrder[sA] = b
+  self.sOrder[sB] = a
 end
 
 local function float(self, pos)
@@ -84,7 +84,9 @@ end
 local function remove(self, pos)
   if pos == nil then return end
   local last = #self.orders
+  if pos > last then return end
   local v = self.orders[pos]
+  self.sOrder[self.scenes[pos]] = nil
   if pos < last then
     swap(self, last, pos)
     float(self, pos)
@@ -99,9 +101,7 @@ local function remove(self, pos)
       pos = min
     end
   end
-  if pos <= last then
-    self.orders[last] = nil
-  end
+  self.orders[last] = nil
   return v
 end
 
