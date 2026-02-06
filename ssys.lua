@@ -44,7 +44,7 @@ local l2d_override = {
 local sceneHeap = {}
 sceneHeap.__index = sceneHeap
 
-function sceneHeap.new()
+local function newHeap()
   local heap = setmetatable({
     scenes = {},
     orders = {},
@@ -53,21 +53,21 @@ function sceneHeap.new()
   return heap
 end
 
-function sceneHeap:swap(a, b)
+local function swap(self, a, b)
   self.orders[a], self.orders[b] = 
   self.orders[b], self.orders[a] ;
 end
 
-function sceneHeap:float(pos)
+local function float(self, pos)
   while pos > 1 do
     local parent = mathFloor(pos/2)
     if self.orders[pos] > self.orders[parent] then break end
-    self:swap(pos, parent)
+    swap(self, pos, parent)
     pos = parent
   end
 end
 
-function sceneHeap:sink(pos)
+local function sink(self, pos)
   local last = #self.orders
   while true do
     local min = pos
@@ -76,27 +76,27 @@ function sceneHeap:sink(pos)
       if c <= last and self.orders[c] > self.orders[min] then min = c end
     end
     if min == pos then break end
-    self:swap(pos, min)
+    swap(self, pos, min)
     pos = min
   end
 end
 
-function sceneHeap:push(sceneName, order)
+local function push(self, sceneName, order)
   local pos = #self.orders + 1
   self.sOrder[sceneName] = pos
   self.scenes[pos] = sceneName
   self.orders[pos] = order or 0
-  self:float(pos)
+  float(self, pos)
 end
 
-function sceneHeap:remove(pos)
+local function remove(self, pos)
   if pos == nil then return end
   local last = #self.orders
   local v = self.orders[pos]
   if pos < last then
-    self:swap(last, pos)
-    self:float(pos)
-    self:sink(pos)
+    swap(self, last, pos)
+    float(self, pos)
+    sink(self, pos)
   end
   if pos <= last then
     self.orders[last] = nil
@@ -108,7 +108,7 @@ end
 
 local heapStack = setmetatable({}, {
   __index = function(t, key)
-    local new = sceneHeap.new()
+    local new = newHeap()
     rawset(t, key, new)
     return new
   end,
@@ -124,13 +124,13 @@ local scenes = setmetatable({}, {
 local function new(sceneName, event, callback, order)
   assert(type(callback) == 'function', 'ssys.new, 3rd argument => function expected')
   scenes[event][sceneName] = callback
-  heapStack[event]:push(sceneName, order or 0)
+  push(heapStack[event], sceneName, order or 0)
 end 
 
 local function rem(sceneName, event)
   local heap = heapStack[event]
   scenes[event][sceneName] = nil
-  heap:remove(heap.sOrder[sceneName])
+  remove(heap, heap.sOrder[sceneName])
 end
 
 local function call(event, ...)
