@@ -5,7 +5,6 @@
 ###### toOverride [string] Callback Name
 ###### func [function] Your function
 ###### order [number?] Order inside one scene
-###### condition [function?] Condition on which scene will execute
 
 - creates/overrides a ssys callback
 ### - `ssys.rem(sceneName, toOverride) -> void`
@@ -24,12 +23,13 @@
 - mainly used for creating custom callbacks
 
 
-### - `ssys.data(sceneName, toOverride) -> void`
+### - `ssys.overrideL2D(sceneName, toOverride) -> void`
 
-###### sName [any] Scene Identifier
-###### toOverride [string] Callback Name
+- use in love2d to replace callback functions with ssys
 
-- returns {func, order}
+### - `ssys.scenes`
+
+- scenes table (tree: -> event -> scene)
 
 ## multiple examples in one:
 ```lua
@@ -41,5 +41,5 @@ ssys.new('main', 'initglobals', function()
 end)
 ssys.new('main', 'initglobals', function()
   print('initialized')
-end, 100, function() return E == true end)
+end, 100)
 ```
