@@ -1,23 +1,23 @@
 # SSYS, SceneSystems - a love2d cross-file callbacks library.
 ### - `ssys.new(sceneName, toOverride, func, [order or 0], funcif?) -> void`
 
-###### sName [any] Scene Identifier
-###### toOverride [string] Callback Name
-###### func [function] Your function
-###### order [number?] Order inside one scene
+###### sceneName [any] Scene Identifier
+###### event [any] Event
+###### callback [function] Your function
+###### order [number or nil] Order inside one scene
 
 - creates/overrides a ssys callback
 ### - `ssys.rem(sceneName, toOverride) -> void`
 
-###### sName [any] Scene Identifier
-###### toOverride [string] Callback Name
+###### sceneName [any] Scene Identifier
+###### event [any] Event
 
 - removes a ssys callback
 
 ### - `ssys.call(toOverride, ...) -> void`
 
-###### toOverride [string] Callback Name
-###### args [...]
+###### event [any] Event
+###### args [...] Arguments passed to event's callbacks
 
 - calls every scene of your callback
 - mainly used for creating custom callbacks
