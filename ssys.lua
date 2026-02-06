@@ -128,9 +128,8 @@ local function new(sceneName, event, callback, order)
 end 
 
 local function rem(sceneName, event)
-  local heap = heapStack[event]
   scenes[event][sceneName] = nil
-  remove(heap, heap.sOrder[sceneName])
+  remove(heapStack[event], heapStack[event].sOrder[sceneName])
 end
 
 local function call(event, ...)
