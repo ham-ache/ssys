@@ -23,7 +23,7 @@
 - mainly used for creating custom callbacks
 
 
-### - `ssys.overrideL2D(sceneName, toOverride) -> void`
+### - `ssys.overrideL2D() -> void`
 
 - use in love2d to replace callback functions with ssys
 
