@@ -3,39 +3,39 @@ local _G = _G
 local ipairs, type, mathFloor , assert, setmetatable, rawset = 
       ipairs, type, math.floor, assert, setmetatable, rawset
 local l2d_override = {
-    'draw',
-    'load',
-    'lowmemory',
-    'quit',
-    'threaderror',
-    'update',
-    'directorydropped',
-    'displayrotated',
-    'filedropped',
-    'focus',
-    'mousefocus',
-    'resize',
-    'visible',
-    'keypressed',
-    'keyreleased',
-    'textedited',
-    'textinput',
-    'mousemoved',
-    'mousepressed',
-    'mousereleased',
-    'wheelmoved',
-    'gamepadaxis',
-    'gamepadpressed',
-    'gamepadreleased',
-    'joystickadded',
-    'joystickaxis',
-    'joystickhat',
-    'joystickpressed',
-    'joystickreleased',
-    'joystickremoved',
-    'touchmoved',
-    'touchpressed',
-    'touchreleased',
+  'draw',
+  'load',
+  'lowmemory',
+  'quit',
+  'threaderror',
+  'update',
+  'directorydropped',
+  'displayrotated',
+  'filedropped',
+  'focus',
+  'mousefocus',
+  'resize',
+  'visible',
+  'keypressed',
+  'keyreleased',
+  'textedited',
+  'textinput',
+  'mousemoved',
+  'mousepressed',
+  'mousereleased',
+  'wheelmoved',
+  'gamepadaxis',
+  'gamepadpressed',
+  'gamepadreleased',
+  'joystickadded',
+  'joystickaxis',
+  'joystickhat',
+  'joystickpressed',
+  'joystickreleased',
+  'joystickremoved',
+  'touchmoved',
+  'touchpressed',
+  'touchreleased',
 }
 
 ----------------------------------------------
@@ -82,6 +82,7 @@ local function sink(self, pos)
 end
 
 local function push(self, sceneName, order)
+  if self.sOrder[sceneName] then return end
   local pos = #self.orders + 1
   self.sOrder[sceneName] = pos
   self.scenes[pos] = sceneName
@@ -128,9 +129,8 @@ local function new(sceneName, event, callback, order)
 end 
 
 local function rem(sceneName, event)
-  local heap = heapStack[event]
   scenes[event][sceneName] = nil
-  remove(heap, heap.sOrder[sceneName])
+  remove(heapStack[event], heapStack[event].sOrder[sceneName])
 end
 
 local function call(event, ...)
