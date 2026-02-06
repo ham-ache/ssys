@@ -38,8 +38,9 @@ local l2d_override = {
   'touchreleased',
 }
 
-----------------------------------------------
--- used neccessary parts of Tieske's binary heap (https://github.com/Tieske)
+--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~--
+-- used neccessary parts of Tieske's binary heap (https://github.com/Tieske) --
+--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~--
 
 local sceneHeap = {}
 sceneHeap.__index = sceneHeap
@@ -67,20 +68,6 @@ local function float(self, pos)
   end
 end
 
-local function sink(self, pos)
-  local last = #self.orders
-  while true do
-    local min = pos
-    local child = pos*2
-    for c = child, child + 1 do
-      if c <= last and self.orders[c] > self.orders[min] then min = c end
-    end
-    if min == pos then break end
-    swap(self, pos, min)
-    pos = min
-  end
-end
-
 local function push(self, sceneName, order)
   if self.sOrder[sceneName] then return end
   local pos = #self.orders + 1
@@ -97,7 +84,16 @@ local function remove(self, pos)
   if pos < last then
     swap(self, last, pos)
     float(self, pos)
-    sink(self, pos)
+    while true do -- sink
+      local min = pos
+      local child = pos*2
+      for c = child, child + 1 do
+        if c <= last and self.orders[c] > self.orders[min] then min = c end
+      end
+      if min == pos then break end
+      swap(self, pos, min)
+      pos = min
+    end
   end
   if pos <= last then
     self.orders[last] = nil
@@ -105,7 +101,7 @@ local function remove(self, pos)
   return v
 end
 
------------------------------------------------
+--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~--
 
 local heapStack = setmetatable({}, {
   __index = function(t, key)
@@ -144,18 +140,34 @@ local function call(event, ...)
   end
 end
 
+local function clear(event)
+  heapStack[event] = nil
+  scenes[event] = nil
+end
+
 local function overrideL2D()
-  for _, name in ipairs(l2d_override) do
+  for x = 1, #l2d_override do
+    local name = l2d_override[x]
     love[name] = function(...)
       call(name, ...)
     end
   end
 end
 
-return{
+local function fetchScenes()
+  return scenes
+end
+
+local function fetchEventsHeap()
+  return heapStack
+end
+
+return {
   new = new,
   rem = rem,
   call = call,
+  clear = clear,
   overrideL2D = overrideL2D,
-  scenes = scenes
+  scenes = fetchScenes,
+  eventsHeap = fetchEventsHeap
 }
