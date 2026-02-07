@@ -42,8 +42,6 @@ local l2d_override = {
 -- took neccessary parts of Tieske's binary heap (https://github.com/Tieske) --
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~--
 
--- i have rewritten this part 3 times.
--- somehow, THIS is the reason behind double-triple speed.
 local lt = function(a, b) return a < b end
  
 local function swap(self, a, b)
@@ -193,20 +191,12 @@ local function overrideL2D()
   end
 end
 
-local function fetchScenes()
-  return scenes
-end
-
-local function fetchEventsHeap()
-  return heapStack
-end
-
 return {
   new = new,
   rem = rem,
   call = call,
   clear = clear,
   overrideL2D = overrideL2D,
-  scenes = fetchScenes,
-  eventsHeap = fetchEventsHeap
+  scenes = scenes,
+  eventsHeap = heapStack
 }
