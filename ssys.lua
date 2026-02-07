@@ -1,7 +1,7 @@
 -- 'Scene Systems' Cross-file callbacks library by hamache | Github: @ham-ache
-local _G = _G
 local ipairs, type, mathFloor , assert, setmetatable, rawset = 
       ipairs, type, math.floor, assert, setmetatable, rawset
+local _ENV = nil
 local l2d_override = {
   'draw',
   'load',
@@ -39,77 +39,111 @@ local l2d_override = {
 }
 
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~--
--- used neccessary parts of Tieske's binary heap (https://github.com/Tieske) --
+-- took neccessary parts of Tieske's binary heap (https://github.com/Tieske) --
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~--
 
-local sceneHeap = {}
-sceneHeap.__index = sceneHeap
-
-local function newHeap()
-  local heap = setmetatable({
-    scenes = {},
-    orders = {},
-    sOrder = {},
-  }, sceneHeap)
-  return heap
+-- i have rewritten this part 3 times.
+-- somehow, THIS is the reason behind double-triple speed.
+local lt = function(a, b) return a < b end
+ 
+local function swap(self, a, b)
+  self.order[a], self.order[b] = self.order[b], self.order[a]
+  local pla, plb = self.scene[a], self.scene[b]
+  self.reverse[pla], self.reverse[plb] = b, a
+  self.scene[a], self.scene[b] = plb, pla
 end
 
-local function swap(self, a, b)
-  self.orders[a], self.orders[b] = 
-  self.orders[b], self.orders[a] ;
-  local sA, sB = self.scenes[a], self.scenes[b]
-  self.scenes[a], self.scenes[b] = sB, sA
-  self.sOrder[sA] = b
-  self.sOrder[sB] = a
+local function erase(self, pos)
+  self.reverse[self.scene[pos]] = nil
+  self.scene[pos] = nil
+  self.order[pos] = nil
 end
 
 local function float(self, pos)
+  local orders = self.order
   while pos > 1 do
     local parent = mathFloor(pos/2)
-    if self.orders[pos] > self.orders[parent] then break end
-    swap(self, pos, parent)
+    if not lt(orders[pos], orders[parent]) then
+        break
+    end
+    self:swap(parent, pos)
     pos = parent
   end
 end
 
-local function push(self, sceneName, order)
-  if self.sOrder[sceneName] then return end
-  local pos = #self.orders + 1
-  self.sOrder[sceneName] = pos
-  self.scenes[pos] = sceneName
-  self.orders[pos] = order or 0
-  float(self, pos)
+local function sink(self, pos)
+  local orders = self.order
+  local last = #orders
+  while true do
+    local min = pos
+    local child = 2 * pos
+    for c = child, child + 1 do
+      if c <= last and lt(orders[c], orders[min]) then min = c end
+    end
+    if min == pos then break end
+    self:swap(pos, min)
+    pos = min
+  end
 end
 
-local function remove(self, pos)
-  if pos == nil then return end
-  local last = #self.orders
-  if pos > last then return end
-  local v = self.orders[pos]
-  self.sOrder[self.scenes[pos]] = nil
-  if pos < last then
-    swap(self, last, pos)
-    float(self, pos)
-    while true do -- sink
-      local min = pos
-      local child = pos*2
-      for c = child, child + 1 do
-        if c <= last and self.orders[c] < self.orders[min] then min = c end
+local function update(self, pos, order)
+  assert(pos >= 1 and pos <= #self.order, 'ssys: binheap => illegal position')
+  self.order[pos] = order
+  if pos > 1 then self:float(pos) end
+  if pos < #self.order then self:sink(pos) end
+end
+
+local function push(self, order, sceneName)
+  do
+    local here = self.reverse[sceneName]
+    if here ~= nil then
+      if order ~= self.order[here] then
+        update(self, here, order)
       end
-      if min == pos then break end
-      swap(self, pos, min)
-      pos = min
-    end
+      return
+    end 
   end
-  self.orders[last] = nil
-  return v
+  local pos = #self.order + 1
+  self.reverse[sceneName] = pos
+  self.scene[pos] = sceneName
+  self.order[pos] = order
+  self:float(pos)
+end
+
+local function remove(self, sceneName)
+  local pos = self.reverse[sceneName]
+  local last = #self.order
+  if pos < last then
+    local v = self.order[pos]
+    self:swap(pos, last)
+    self:erase(last)
+    self:float(pos)
+    self:sink(pos)
+  elseif pos == last then
+    local v = self.order[pos]
+    self:erase(last)
+  end
+end
+
+local function heapSpawn()
+  return {
+    order = {},
+    scene = {},
+    reverse = {},
+    swap = swap,
+    erase = erase,
+    float = float,
+    sink = sink,
+    push = push,
+    remove = remove
+  }
 end
 
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~--
 
 local heapStack = setmetatable({}, {
   __index = function(t, key)
-    local new = newHeap()
+    local new = heapSpawn()
     rawset(t, key, new)
     return new
   end,
@@ -123,20 +157,21 @@ local scenes = setmetatable({}, {
 })
 
 local function new(sceneName, event, callback, order)
-  assert(type(callback) == 'function', 'ssys.new, 3rd argument => function expected')
+  assert(event ~= nil, 'ssys.new: 2nd argument => unexpected nil')
+  assert(type(callback) == 'function', 'ssys.new: 3rd argument => function expected')
   scenes[event][sceneName] = callback
-  push(heapStack[event], sceneName, order or 0)
+  heapStack[event]:push(order or 0, sceneName)
 end 
 
 local function rem(sceneName, event)
   scenes[event][sceneName] = nil
-  remove(heapStack[event], heapStack[event].sOrder[sceneName])
+  heapStack[event]:remove(sceneName)
 end
 
 local function call(event, ...)
   local heap = heapStack[event]
-  for x = 1, #heap.orders do
-    local sc = heap.scenes[x]
+  for x = 1, #heap.order do
+    local sc = heap.scene[x]
     if not sc then break end
     if scenes[event][sc] then
       scenes[event][sc](...)
