@@ -1,7 +1,9 @@
 -- 'Scene Systems' Cross-file callbacks library by hamache | Github: @ham-ache
-local ipairs, type, mathFloor , assert, setmetatable, rawset = 
-      ipairs, type, math.floor, assert, setmetatable, rawset
+
+local _G = _G
 local _ENV = nil
+local type, mathFloor , assert, setmetatable, rawset = 
+      type, math.floor, assert, setmetatable, rawset
 local l2d_override = {
   'draw',
   'load',
@@ -139,6 +141,7 @@ end
 
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~--
 
+--- contains binary heaps of each event | tree: -> event -> scene
 local heapStack = setmetatable({}, {
   __index = function(t, key)
     local new = heapSpawn()
@@ -146,6 +149,7 @@ local heapStack = setmetatable({}, {
     return new
   end,
 })
+--- tree: -> event -> scene: callback
 local scenes = setmetatable({}, {
   __index = function(t, key)
     local new = {}
@@ -154,6 +158,11 @@ local scenes = setmetatable({}, {
   end,
 })
 
+--- creates a new scene
+---@param sceneName any scene identifier
+---@param event any call when this event is triggered
+---@param callback function function to execute when event is triggered
+---@param order? number scene priority, defaults to 0
 local function new(sceneName, event, callback, order)
   assert(event ~= nil, 'ssys.new: 2nd argument => unexpected nil')
   assert(type(callback) == 'function', 'ssys.new: 3rd argument => function expected')
@@ -161,11 +170,17 @@ local function new(sceneName, event, callback, order)
   heapStack[event]:push(order or 0, sceneName)
 end 
 
+--- removes a scene
+---@param sceneName any scene identifier
+---@param event any event identifier
 local function rem(sceneName, event)
   scenes[event][sceneName] = nil
   heapStack[event]:remove(sceneName)
 end
 
+--- call/create an event
+---@param event any event identifier
+---@param ... any args passed to scenes triggered by this event
 local function call(event, ...)
   local heap = heapStack[event]
   for x = 1, #heap.order do
@@ -177,11 +192,14 @@ local function call(event, ...)
   end
 end
 
+--- wipes an event and every scene inside, also removes the heap related to this event
+---@param event any event identifier
 local function clear(event)
   heapStack[event] = nil
   scenes[event] = nil
 end
 
+--- replace love events with ssys events
 local function overrideL2D()
   for x = 1, #l2d_override do
     local name = l2d_override[x]
@@ -191,7 +209,8 @@ local function overrideL2D()
   end
 end
 
-return {
+---@class ssys
+local ssys = {
   new = new,
   rem = rem,
   call = call,
@@ -200,3 +219,4 @@ return {
   scenes = scenes,
   eventsHeap = heapStack
 }
+return ssys

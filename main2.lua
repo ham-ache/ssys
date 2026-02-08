@@ -17,12 +17,12 @@ ssys.new('main', 'update', function(dt)
   E = E + 1
   if E%10 == 0 then
     ssys.new('e1', 'draw', function()
-        love.graphics.setColor(1, 0, 0)
-        love.graphics.rectangle('fill', 0, 0, 50, 50)
+      love.graphics.setColor(1, 0, 0)
+      love.graphics.rectangle('fill', 0, 0, 50, 50)
     end, 50)
     ssys.new('e2', 'draw', function()
-        love.graphics.setColor(0, 1, 0)
-        love.graphics.rectangle('fill', 20, 20, 50, 50)
+      love.graphics.setColor(0, 1, 0)
+      love.graphics.rectangle('fill', 20, 20, 50, 50)
     end, E)
     for x, v in pairs(ssys.scenes.draw) do
       io.write(x, '\n')
