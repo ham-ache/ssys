@@ -98,7 +98,7 @@ local function push(self, order, sceneName)
     local here = self.reverse[sceneName]
     if here ~= nil then
       if order ~= self.order[here] then
-        update(self, here, order)
+        self:update(here, order)
       end
       return
     end 
@@ -114,13 +114,11 @@ local function remove(self, sceneName)
   local pos = self.reverse[sceneName]
   local last = #self.order
   if pos < last then
-    local v = self.order[pos]
     self:swap(pos, last)
     self:erase(last)
     self:float(pos)
     self:sink(pos)
   elseif pos == last then
-    local v = self.order[pos]
     self:erase(last)
   end
 end
