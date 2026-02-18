@@ -24,13 +24,13 @@
 ### - `ssys.overrideL2D() -> void`
 
 - use in love2d to replace callback functions with ssys
-### - `ssys.scenes()`
+### - `ssys.scenes`
 
-- returns a table of scenes
+- a table of scenes
 - tree: -> event -> scene
-### - `ssys.eventsHeap()`
+### - `ssys.eventsHeap`
 
-- returns a table of events' heap
+- a table of events' heap
 - tree: -> eventHeap -> order{}, sOrder{}, scene{}
 ## example:
 ```lua
