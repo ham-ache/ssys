@@ -183,9 +183,8 @@ local function call(event, ...)
   local heap = heapStack[event]
   for x = 1, #heap.order do
     local sc = heap.scene[x]
-    if not sc then break end
-    if scenes[event][sc] then
-      scenes[event][sc](...)
+    if sc and scenes[event][sc] then
+      scenes[event][sc](...) 
     end
   end
 end
